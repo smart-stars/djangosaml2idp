@@ -21,6 +21,9 @@ from django.views import View
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
+
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
 from saml2 import BINDING_HTTP_POST, BINDING_HTTP_REDIRECT
 from saml2.authn_context import PASSWORD, AuthnBroker, authn_context_class_ref
 from saml2.ident import NameID
@@ -218,8 +221,20 @@ class IdPHandlerViewMixin:
             return HttpResponseRedirect(html_response['data'])
 
 
+class SharifStarLoginRequiredMixin(LoginRequiredMixin):
+    def dispatch(self, request, *args, **kwargs):
+        try:
+            user = JWTAuthentication().authenticate(request)
+            request.user = user[0]
+        except:
+            pass
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+        return super().dispatch(request, *args, **kwargs)
+
+
 @method_decorator(never_cache, name='dispatch')
-class LoginProcessView(LoginRequiredMixin, IdPHandlerViewMixin, View):
+class LoginProcessView(SharifStarLoginRequiredMixin, IdPHandlerViewMixin, View):
     """ View which processes the actual SAML request and returns a self-submitting form with the SAML response.
         The login_required decorator ensures the user authenticates first on the IdP using 'normal' ways.
     """
@@ -269,7 +284,7 @@ class LoginProcessView(LoginRequiredMixin, IdPHandlerViewMixin, View):
 
 
 @method_decorator(never_cache, name='dispatch')
-class SSOInitView(LoginRequiredMixin, IdPHandlerViewMixin, View):
+class SSOInitView(SharifStarLoginRequiredMixin, IdPHandlerViewMixin, View):
     """ View used for IDP initialized login, doesn't handle any SAML authn request
     """
 
@@ -312,7 +327,7 @@ class SSOInitView(LoginRequiredMixin, IdPHandlerViewMixin, View):
 
 
 @method_decorator(never_cache, name='dispatch')
-class ProcessMultiFactorView(LoginRequiredMixin, View):
+class ProcessMultiFactorView(SharifStarLoginRequiredMixin, View):
     """ This view is used in an optional step is to perform 'other' user validation, for example 2nd factor checks.
         Override this view per the documentation if using this functionality to plug in your custom validation logic.
     """
@@ -337,7 +352,7 @@ class ProcessMultiFactorView(LoginRequiredMixin, View):
 
 
 @method_decorator([never_cache, csrf_exempt], name='dispatch')
-class LogoutProcessView(LoginRequiredMixin, IdPHandlerViewMixin, View):
+class LogoutProcessView(SharifStarLoginRequiredMixin, IdPHandlerViewMixin, View):
     """ View which processes the actual SAML Single Logout request
         The login_required decorator ensures the user authenticates first on the IdP using 'normal' way.
     """
