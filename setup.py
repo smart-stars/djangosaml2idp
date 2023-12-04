@@ -16,7 +16,8 @@ setup(
         open(os.path.join(os.path.dirname(__file__), 'README.rst')).read(),
     ]),
     install_requires=[
-        'django>=2.2',
+        'django~=4.2',
+        'djangorestframework-simplejwt~=5.3',
         'pysaml2>=6.5.1',
         'pytz',
         'arrow',
@@ -32,7 +33,7 @@ setup(
             "requests-mock"
         ]
     },
-    python_requires=">=3.6",
+    python_requires=">=3.8",
     license='Apache Software License 2.0',
     packages=find_packages(exclude=["tests*", "docs", "example_setup"]),
     url='https://github.com/OTA-Insight/djangosaml2idp/',
@@ -42,9 +43,7 @@ setup(
         "Development Status :: 5 - Production/Stable",
         'Environment :: Web Environment',
         "Framework :: Django",
-        "Framework :: Django :: 2.2",
-        "Framework :: Django :: 3.0",
-        "Framework :: Django :: 3.1",
+        "Framework :: Django :: 4.2",
         "Intended Audience :: Developers",
         "Intended Audience :: Information Technology",
         "License :: OSI Approved :: Apache Software License",
@@ -55,6 +54,7 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
         "Topic :: Internet :: WWW/HTTP",
         "Topic :: Internet :: WWW/HTTP :: WSGI",
         "Topic :: Security",
